@@ -1,0 +1,205 @@
+import pandas as pd
+import mysql.connector
+from mysql.connector import Error
+import numpy as np
+
+HOST = "localhost"
+USUARIO = "ant"
+SENHA = "996385697"
+BANCO = "dadosM2"
+
+ARQUIVO_CSV = "C:/Users/Administrador/Desktop/bancodedados/dadosM2.csv"
+
+colunas_esperadas = [
+    "tempo_segundos",
+    "timestamp",
+    "temp_1",
+    "temp_2",
+    "temp_3",
+    "temp_4",
+    "temp_5",
+    "temp_6",
+    "temp_7",
+    "temp_8",
+    "pressao_1",
+    "pressao_2",
+    "pressao_3",
+    "pressao_4",
+    "pressao_5",
+    "condhot",
+    "sec",
+    "gor",
+    "fluxo_permeado",
+    "origem",
+    "timestamp_anterior",
+    "temp_1_anterior",
+    "delta_segundos"
+]
+
+try:
+    conexao = mysql.connector.connect(
+        host=HOST,
+        user=USUARIO,
+        password=SENHA,
+        database=BANCO
+    )
+
+    cursor = conexao.cursor()
+    print("Conectado ao MySQL.")
+
+    df = pd.read_csv(
+        ARQUIVO_CSV,
+        sep="//",
+        engine="python",
+        na_values=["nan", "NaN", "", "None", "NULL"]
+    )
+
+    df.columns = (
+        df.columns
+        .str.strip()
+        .str.replace('"', '', regex=False)
+    )
+
+    print("Colunas encontradas:")
+    print(list(df.columns))
+
+    if list(df.columns) != colunas_esperadas:
+        print("\nColunas esperadas:")
+        print(colunas_esperadas)
+        raise Exception("As colunas do CSV não correspondem às esperadas.")
+
+    df = df[colunas_esperadas]
+
+    print("\nCSV carregado com sucesso.")
+
+    cursor.execute("""
+    DROP TABLE IF EXISTS measurements
+    """)
+
+    cursor.execute("""
+    CREATE TABLE measurements (
+        
+
+        tempo_segundos FLOAT,
+        timestamp DATETIME(6),
+
+        temp_1 FLOAT,
+        temp_2 FLOAT,
+        temp_3 FLOAT,
+        temp_4 FLOAT,
+        temp_5 FLOAT,
+        temp_6 FLOAT,
+        temp_7 FLOAT,
+        temp_8 FLOAT,
+
+        pressao_1 FLOAT,
+        pressao_2 FLOAT,
+        pressao_3 FLOAT,
+        pressao_4 FLOAT,
+        pressao_5 FLOAT,
+
+        condhot FLOAT,
+        sec FLOAT,
+        gor FLOAT,
+        fluxo_permeado FLOAT,
+
+        origem VARCHAR(255),
+
+        timestamp_anterior DATETIME(6),
+        temp_1_anterior FLOAT,
+        delta_segundos FLOAT
+    )
+    """)
+
+    print("Tabela recriada.")
+
+    for coluna in ["timestamp", "timestamp_anterior"]:
+        df[coluna] = (
+            df[coluna]
+            .astype(str)
+            .str.strip()
+            .str.replace('"', '', regex=False)
+        )
+
+        df[coluna] = pd.to_datetime(
+            df[coluna],
+            errors="coerce",
+            format="mixed"
+        )
+
+    print("\nTimestamps inválidos:")
+    print("timestamp:", df["timestamp"].isna().sum())
+    print("timestamp_anterior:", df["timestamp_anterior"].isna().sum())
+
+    df["timestamp"] = df["timestamp"].dt.strftime("%Y-%m-%d %H:%M:%S.%f")
+    df["timestamp_anterior"] = df["timestamp_anterior"].dt.strftime("%Y-%m-%d %H:%M:%S.%f")
+
+    df = df.replace({np.nan: None, pd.NaT: None})
+
+    sql_insert = """
+    INSERT INTO measurements (
+        tempo_segundos,
+        timestamp,
+        temp_1,
+        temp_2,
+        temp_3,
+        temp_4,
+        temp_5,
+        temp_6,
+        temp_7,
+        temp_8,
+        pressao_1,
+        pressao_2,
+        pressao_3,
+        pressao_4,
+        pressao_5,
+        condhot,
+        sec,
+        gor,
+        fluxo_permeado,
+        origem,
+        timestamp_anterior,
+        temp_1_anterior,
+        delta_segundos
+    )
+    VALUES (
+        %s, %s, %s, %s, %s, %s, %s, %s,
+        %s, %s, %s, %s, %s, %s, %s, %s,
+        %s, %s, %s, %s, %s, %s, %s
+    )
+    """
+
+    dados = [
+        tuple(linha[coluna] for coluna in colunas_esperadas)
+        for _, linha in df.iterrows()
+    ]
+
+    tamanho_lote = 1000
+    total_processados = 0
+
+    for i in range(0, len(dados), tamanho_lote):
+        lote = dados[i:i + tamanho_lote]
+        cursor.executemany(sql_insert, lote)
+        conexao.commit()
+
+        total_processados += len(lote)
+        print(f"{total_processados} registros processados...")
+
+    print(f"\n{total_processados} registros inseridos com sucesso.")
+
+except Error as e:
+    print("\nErro no MySQL:")
+    print(e)
+
+except Exception as e:
+    print("\nErro:")
+    print(e)
+
+finally:
+    if "cursor" in locals():
+        cursor.close()
+
+    if "conexao" in locals() and conexao.is_connected():
+        conexao.close()
+
+    print("\nConexão encerrada.")
