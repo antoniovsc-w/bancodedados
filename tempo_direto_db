@@ -2,10 +2,10 @@ import sqlite3
 import pandas as pd
 
 # Caminho do banco SQLite
-arquivo_db = r"C:\Users\Administrador\Desktop\EXPERIMENTOSLONGOPRAZO\M3\database13"
+arquivo_db = r"C:\Users\Administrador\Desktop\EXPERIMENTOSLONGOPRAZO\M3\database14"
 
 # Arquivo de saída
-saida_csv = r"C:\Users\Administrador\Desktop\EXPERIMENTOSLONGOPRAZO\M3\measurements_processado.csv"
+saida_csv = r"C:\Users\Administrador\Desktop\EXPERIMENTOSLONGOPRAZO\M3\measurements_processado2.csv"
 
 # Conectar ao banco SQLite
 conn = sqlite3.connect(arquivo_db)
