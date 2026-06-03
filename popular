@@ -6,12 +6,11 @@ import numpy as np
 HOST = "localhost"
 USUARIO = "ant"
 SENHA = "996385697"
-BANCO = "dadosM2"
+BANCO = "dadosM3"
 
-ARQUIVO_CSV = r"C:\Users\Administrador\Desktop\EXPERIMENTOSLONGOPRAZO\M2\Informações\dadosM2.csv"
+ARQUIVO_CSV = r"C:\Users\Administrador\Desktop\EXPERIMENTOSLONGOPRAZO\M3\measurements_processado5_preenchido.csv"
 
 colunas_esperadas = [
-    "tempo_segundos",
     "timestamp",
     "temp_1",
     "temp_2",
@@ -30,10 +29,31 @@ colunas_esperadas = [
     "sec",
     "gor",
     "fluxo_permeado",
-    "origem",
     "timestamp_anterior",
     "temp_1_anterior",
-    "delta_segundos"
+    "delta_segundos",
+    "tempo_segundos",
+    "T_media_quente_C",
+    "rho_salmoura_kg_m3",
+    "cp_salmoura_J_kgK",
+    "m_dot_quente_kg_s",
+    "deltaT_quente_C",
+    "Q_quente_W",
+    "T_ref_C",
+    "h_evap_J_kg",
+    "vazao_permeado_m3_s",
+    "rho_agua_kg_m3",
+    "cp_agua_J_kgK",
+    "m_dot_frio_kg_s",
+    "deltaT_frio_C",
+    "Q_frio_W",
+    "m_dot_permeado_kg_s",
+    "Q_evaporacao_W",
+    "GOR_ant",
+    "SEC_termico_kWh_m31",
+    "SEC_termico_kWh_m3",
+    "Balanco_Q",
+    "Tempo_dias"
 ]
 
 try:
@@ -49,7 +69,7 @@ try:
 
     df = pd.read_csv(
         ARQUIVO_CSV,
-        sep="//",
+        sep="/",
         engine="python",
         na_values=["nan", "NaN", "", "None", "NULL"]
     )
@@ -64,11 +84,9 @@ try:
     print("Colunas encontradas:")
     print(list(df.columns))
 
-    # Remove coluna id, caso exista no CSV
     if "id" in df.columns:
         df = df.drop(columns=["id"])
 
-    # Verifica se todas as colunas necessárias existem
     colunas_faltando = [c for c in colunas_esperadas if c not in df.columns]
 
     if colunas_faltando:
@@ -76,7 +94,6 @@ try:
         print(colunas_faltando)
         raise Exception("O CSV não possui todas as colunas necessárias.")
 
-    # Reordena as colunas na ordem correta
     df = df[colunas_esperadas]
 
     print("\nCSV carregado e colunas corrigidas com sucesso.")
@@ -85,7 +102,6 @@ try:
 
     cursor.execute("""
     CREATE TABLE measurements (
-        tempo_segundos FLOAT,
         timestamp DATETIME(6),
 
         temp_1 FLOAT,
@@ -108,11 +124,36 @@ try:
         gor FLOAT,
         fluxo_permeado FLOAT,
 
-        origem VARCHAR(255),
-
         timestamp_anterior DATETIME(6),
         temp_1_anterior FLOAT,
-        delta_segundos FLOAT
+        delta_segundos FLOAT,
+        tempo_segundos FLOAT,
+
+        T_media_quente_C FLOAT,
+        rho_salmoura_kg_m3 FLOAT,
+        cp_salmoura_J_kgK FLOAT,
+        m_dot_quente_kg_s FLOAT,
+        deltaT_quente_C FLOAT,
+        Q_quente_W FLOAT,
+
+        T_ref_C FLOAT,
+        h_evap_J_kg FLOAT,
+        vazao_permeado_m3_s FLOAT,
+        rho_agua_kg_m3 FLOAT,
+        cp_agua_J_kgK FLOAT,
+
+        m_dot_frio_kg_s FLOAT,
+        deltaT_frio_C FLOAT,
+        Q_frio_W FLOAT,
+
+        m_dot_permeado_kg_s FLOAT,
+        Q_evaporacao_W FLOAT,
+
+        GOR_ant FLOAT,
+        SEC_termico_kWh_m31 FLOAT,
+        SEC_termico_kWh_m3 FLOAT,
+        Balanco_Q FLOAT,
+        Tempo_dias FLOAT
     )
     """)
 
@@ -140,38 +181,14 @@ try:
     df["timestamp"] = df["timestamp"].dt.strftime("%Y-%m-%d %H:%M:%S.%f")
     df["timestamp_anterior"] = df["timestamp_anterior"].dt.strftime("%Y-%m-%d %H:%M:%S.%f")
 
-    df = df.replace({np.nan: None, pd.NaT: None, "NaT": None})
+    df = df.replace({np.nan: None, pd.NaT: None, "NaT": None, "nan": None})
 
-    sql_insert = """
+    sql_insert = f"""
     INSERT INTO measurements (
-        tempo_segundos,
-        timestamp,
-        temp_1,
-        temp_2,
-        temp_3,
-        temp_4,
-        temp_5,
-        temp_6,
-        temp_7,
-        temp_8,
-        pressao_1,
-        pressao_2,
-        pressao_3,
-        pressao_4,
-        pressao_5,
-        condhot,
-        sec,
-        gor,
-        fluxo_permeado,
-        origem,
-        timestamp_anterior,
-        temp_1_anterior,
-        delta_segundos
+        {", ".join(colunas_esperadas)}
     )
     VALUES (
-        %s, %s, %s, %s, %s, %s, %s, %s,
-        %s, %s, %s, %s, %s, %s, %s, %s,
-        %s, %s, %s, %s, %s, %s, %s
+        {", ".join(["%s"] * len(colunas_esperadas))}
     )
     """
 

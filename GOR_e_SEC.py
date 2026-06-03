@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-ARQUIVO_CSV = r"C:\Users\Administrador\Desktop\EXPERIMENTOSLONGOPRAZO\M3\measurements_processado2.csv"
+ARQUIVO_CSV = r"C:\Users\Administrador\Desktop\EXPERIMENTOSLONGOPRAZO\M3\measurements_processado5.csv"
 
 SALINIDADE = 47.0          # g/kg
 PRESSAO = 0.101325         # MPa
