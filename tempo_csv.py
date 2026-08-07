@@ -1,15 +1,15 @@
 import pandas as pd
 
 # Arquivo exportado pelo DBeaver
-arquivo_csv = r"C:\Users\Administrador\Downloads\database11teste.csv"
+arquivo_csv = r"C:\Users\Administrador\Desktop\EXPERIMENTOSLONGOPRAZO\M1\measurements_202607060857.csv"
 
 # Arquivo de saída
-saida_csv = r"C:\Users\Administrador\Desktop\EXPERIMENTOSLONGOPRAZO\M3\measurements_processado.csv"
+saida_csv = r"C:\Users\Administrador\Desktop\EXPERIMENTOSLONGOPRAZO\M1\measurements_202607060857_dias.csv"
 
 # Ler CSV exportado pelo DBeaver
 df = pd.read_csv(
     arquivo_csv,
-    sep="//",
+    sep="/",
     engine="python",
     encoding="utf-8-sig"
 )

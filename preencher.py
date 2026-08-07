@@ -1,11 +1,11 @@
 import pandas as pd
 
 arquivo_entrada = (
-    r"C:\Users\Administrador\Desktop\EXPERIMENTOSLONGOPRAZO\M3\measurements_processado5.csv"
+    r"C:\Users\Administrador\Desktop\EXPERIMENTOSLONGOPRAZO\M3\dados_final_M3.csv"
 )
 
 arquivo_saida = (
-    r"C:\Users\Administrador\Desktop\EXPERIMENTOSLONGOPRAZO\M3\measurements_processado5_preenchido.csv"
+    r"C:\Users\Administrador\Desktop\EXPERIMENTOSLONGOPRAZO\M3\dados_final_M3_preenchido.csv"
 )
 
 df = pd.read_csv(

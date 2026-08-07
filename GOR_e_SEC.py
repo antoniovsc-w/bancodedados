@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
 
-ARQUIVO_CSV = r"C:\Users\Administrador\Desktop\EXPERIMENTOSLONGOPRAZO\M3\measurements_processado5.csv"
+ARQUIVO_CSV = r"C:\Users\Administrador\Desktop\EXPERIMENTOSLONGOPRAZO\M1\dados.csv"
 
-SALINIDADE = 47.0          # g/kg
+SALINIDADE = 78         # g/kg
 PRESSAO = 0.101325         # MPa
 
 VAZAO_QUENTE_L_MIN = 2.5   # alterar para a vazão real
@@ -365,6 +365,16 @@ df["Balanco_Q"] = (
     - df["Q_evaporacao_W"]
 )
 
+# Cria coluna Tempo_dias
+df["Tempo_dias"] = df["tempo_segundos"] / 86400
+
+
+df["media_movel_cond"] = (
+    df["condhot"]
+    .rolling(window=21, center=True, min_periods=21)
+    .mean()
+)
+
 
 # ==========================================================
 # EXPORTAÇÃO
@@ -373,7 +383,8 @@ df["Balanco_Q"] = (
 df.to_csv(
     ARQUIVO_CSV,
     index=False,
-    sep="/"
+    sep="/",
+    decimal=","
 )
 
 
@@ -391,7 +402,8 @@ print(df[[
     "Q_evaporacao_W",
     "GOR_ant",
     "SEC_termico_kWh_m3",
-    "Balanco_Q"
+    "Balanco_Q",
+    "media_movel_cond"
 ]].head())
 
 print("\nArquivo atualizado")
