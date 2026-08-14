@@ -2,7 +2,7 @@ import sqlite3
 import pandas as pd
 
 # Caminho do banco SQLite
-arquivo_db = r"C:\Users\Administrador\Desktop\EXPERIMENTOSLONGOPRAZO\M1\database23"
+arquivo_db = r"C:\Users\Administrador\Desktop\EXPERIMENTOSLONGOPRAZO\M1\database24"
 
 # Arquivo de saída
 saida_csv = r"C:\Users\Administrador\Desktop\EXPERIMENTOSLONGOPRAZO\M1\dados.csv"

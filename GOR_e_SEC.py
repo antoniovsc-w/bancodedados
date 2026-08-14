@@ -368,12 +368,19 @@ df["Balanco_Q"] = (
 # Cria coluna Tempo_dias
 df["Tempo_dias"] = df["tempo_segundos"] / 86400
 
-
+# Média móvel
 df["media_movel_cond"] = (
     df["condhot"]
     .rolling(window=21, center=True, min_periods=21)
     .mean()
 )
+
+df["media_movel_fluxo"] = (
+    df["fluxo_permeado"]
+    .rolling(window=21, center=True, min_periods=21)
+    .mean()
+)
+
 
 
 # ==========================================================
